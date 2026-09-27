@@ -9,28 +9,37 @@ using System.Runtime.CompilerServices;
 
 namespace Avalonia.Markup.Declarative;
 
+/// <summary>Tracks declarative views and reloads them when their types change during hot reload.</summary>
 public static class HotReloadManager
 {
     private static readonly ConcurrentDictionary<Type, ConditionalWeakTable<IReloadable, object?>> Instances = new();
 
+    /// <summary>Raised after application updates have been applied to tracked views.</summary>
     public static event Action<Type[]?>? HotReloaded;
 
+    /// <summary>Gets whether automatic view reload is enabled.</summary>
     public static bool IsEnabled { get; private set; } = true;
 
+    /// <summary>Enables automatic view reload after application updates.</summary>
     public static void Activate() =>
         IsEnabled = true;
 
+    /// <summary>Disables automatic view reload after application updates.</summary>
     public static void Deactivate() =>
         IsEnabled = false;
 
     private static void OnHotReloaded(Type[]? types) =>
         HotReloaded?.Invoke(types);
 
+    /// <summary>Called by the runtime when metadata changes are applied.</summary>
+    /// <param name="types">The types changed by the update, or <see langword="null"/> when unspecified.</param>
     public static void ClearCache(Type[]? types)
     {
         Log("ClearCache for types: " + PrintTypes(types));
     }
 
+    /// <summary>Reloads tracked views affected by an application update and raises <see cref="HotReloaded"/>.</summary>
+    /// <param name="types">The types changed by the update, or <see langword="null"/> when unspecified.</param>
     public static void UpdateApplication(Type[]? types)
     {
         if (IsEnabled)
@@ -60,6 +69,9 @@ public static class HotReloadManager
     [Conditional("DEBUG")]
     private static void Log(string message) => Debug.WriteLine($"[Markup.HotReload] {message}");
 
+    /// <summary>Formats the supplied types as a comma-separated list of type names.</summary>
+    /// <param name="types">The types to format, or <see langword="null"/>.</param>
+    /// <returns>The comma-separated type names, or an empty string when <paramref name="types"/> is null.</returns>
     public static string PrintTypes(Type[]? types)
     {
         if (types != null)

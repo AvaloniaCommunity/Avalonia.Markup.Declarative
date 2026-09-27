@@ -36,6 +36,10 @@ public static class ControlHighlightService
     /// Optional label factory; when null a default "<c>Type #Name  W×H</c>" label is used. Ignored when
     /// <paramref name="showLabel"/> is false.
     /// </param>
+    /// <param name="controls">The controls to highlight.</param>
+    /// <param name="color">The frame color, or <see cref="DefaultColor"/> when omitted.</param>
+    /// <param name="thickness">The frame thickness in device-independent pixels.</param>
+    /// <param name="showLabel">Whether to show a label beside each frame.</param>
     public static IReadOnlyList<Control> Highlight(
         IEnumerable<Control> controls,
         Color? color = null,

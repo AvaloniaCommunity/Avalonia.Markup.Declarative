@@ -24,6 +24,7 @@ public sealed class InspectionTools
 {
     private InspectionTools() { }
 
+    /// <summary>Runs the <c>get_app_info</c> MCP tool.</summary>
     [McpServerTool(Name = "get_app_info", ReadOnly = true), Description(
         "Returns a one-call orientation of the running app: open windows (title, index, client size, " +
         "render scaling), the focused element, the active/requested theme variant, the Avalonia version, " +
@@ -74,6 +75,7 @@ public sealed class InspectionTools
             return builder.ToString();
         });
 
+    /// <summary>Runs the <c>get_visual_tree</c> MCP tool.</summary>
     [McpServerTool(Name = "get_visual_tree", ReadOnly = true), Description(
         "Returns a text rendering of the live visual tree (type, #Name, layout bounds, key properties incl. " +
         "non-default alignment/margin). Each node also carries abs=[…] and center=(x,y): ABSOLUTE " +
@@ -130,6 +132,7 @@ public sealed class InspectionTools
             return dump;
         });
 
+    /// <summary>Runs the <c>get_properties</c> MCP tool.</summary>
     [McpServerTool(Name = "get_properties", ReadOnly = true), Description(
         "Returns a control's property values: effective state (IsEnabled/IsVisible/IsFocused/Opacity/...), " +
         "DataContext type, style classes, and every locally-set styled property (the values the author " +
@@ -155,6 +158,7 @@ public sealed class InspectionTools
             return PropertyInspector.DescribeProperties(control, names);
         });
 
+    /// <summary>Runs the <c>get_property_sources</c> MCP tool.</summary>
     [McpServerTool(Name = "get_property_sources", ReadOnly = true), Description(
         "Reports where a property's value comes from — local set, style, template, animation or " +
         "inheritance (the binding priority) — for one property, or for every set styled property when " +
@@ -175,6 +179,7 @@ public sealed class InspectionTools
             return PropertySourceInspector.Describe(control, property);
         });
 
+    /// <summary>Runs the <c>get_data_context</c> MCP tool.</summary>
     [McpServerTool(Name = "get_data_context", ReadOnly = true), Description(
         "Renders a control's DataContext (view-model) as text — property names and current values a " +
         "binding could target — for debugging bindings without a debugger. Cycle-safe; collections are " +
@@ -195,6 +200,7 @@ public sealed class InspectionTools
                    DataContextInspector.Describe(control.DataContext, depth ?? 1);
         });
 
+    /// <summary>Runs the <c>get_source</c> MCP tool.</summary>
     [McpServerTool(Name = "get_source", ReadOnly = true), Description(
         "Maps a control back to the declarative component (ViewBase subclass) that built it, by full type " +
         "name and assembly, plus any enclosing components. Use this to find which class to edit. Selector " +
@@ -212,6 +218,7 @@ public sealed class InspectionTools
             return ComponentSourceLocator.Describe(control);
         });
 
+    /// <summary>Runs the <c>find_text</c> MCP tool.</summary>
     [McpServerTool(Name = "find_text", ReadOnly = true), Description(
         "Finds controls whose visible text contains the given text (case-insensitive) — the reverse of " +
         "reading a label off a screenshot. Checks TextBlock/TextBox text and string Content/Header. " +
@@ -249,6 +256,7 @@ public sealed class InspectionTools
             return builder.ToString();
         });
 
+    /// <summary>Runs the <c>hit_test</c> MCP tool.</summary>
     [McpServerTool(Name = "hit_test", ReadOnly = true), Description(
         "Returns the control(s) at a pixel coordinate — the reverse of a screenshot. Screenshots render " +
         "at 96 DPI, so screenshot pixel coordinates equal these absolute client-DIP coordinates (the same " +
@@ -272,6 +280,7 @@ public sealed class InspectionTools
             return HitTester.Describe(top, new global::Avalonia.Point(x, y));
         });
 
+    /// <summary>Runs the <c>get_layout</c> MCP tool.</summary>
     [McpServerTool(Name = "get_layout", ReadOnly = true), Description(
         "Returns a detailed layout report for a control: its bounds, its position relative to the window, " +
         "the size it requested vs got (DesiredSize, Width/Height, Min/Max), HorizontalAlignment/" +
@@ -312,6 +321,7 @@ public sealed class InspectionTools
             return builder.ToString();
         });
 
+    /// <summary>Runs the <c>layout_audit</c> MCP tool.</summary>
     [McpServerTool(Name = "layout_audit", ReadOnly = true), Description(
         "Sweeps a subtree and reports common layout problems: zero-size (a control that wanted space but " +
         "got none), off-screen / partially-clipped, out-of-parent (overflows its container), overlap " +
@@ -344,6 +354,7 @@ public sealed class InspectionTools
             return builder.ToString();
         });
 
+    /// <summary>Runs the <c>list_components</c> MCP tool.</summary>
     [McpServerTool(Name = "list_components", ReadOnly = true), Description(
         "Lists the active declarative views (components) currently tracked in the running app: type, " +
         "Name, attachment state and bounds. Use a returned Name as input to other tools.")]
@@ -369,6 +380,7 @@ public sealed class InspectionTools
             return builder.ToString();
         });
 
+    /// <summary>Runs the <c>screenshot_window</c> MCP tool.</summary>
     [McpServerTool(Name = "screenshot_window", ReadOnly = true), Description(
         "Captures a PNG screenshot of a window/top-level. Rendering re-draws the visual, so it works " +
         "even for a minimized or occluded window. Pass windowId (window title or 0-based index); omit " +
@@ -430,6 +442,7 @@ public sealed class InspectionTools
             }
         });
 
+    /// <summary>Runs the <c>screenshot_control</c> MCP tool.</summary>
     [McpServerTool(Name = "screenshot_control", ReadOnly = true), Description(
         "Captures a PNG screenshot of a single control identified by its Name. mode='isolated' renders " +
         "just the control's subtree; mode='in_context' renders the window and crops to the control. " +
@@ -476,6 +489,7 @@ public sealed class InspectionTools
             }
         });
 
+    /// <summary>Runs the <c>screenshot_region</c> MCP tool.</summary>
     [McpServerTool(Name = "screenshot_region", ReadOnly = true), Description(
         "Captures a rectangle of a window as PNG. Coordinates are the SAME absolute client-DIP frame as " +
         "hit_test / click_at / get_visual_tree's center=(x,y), so you can screenshot exactly the area you " +
@@ -537,11 +551,13 @@ public sealed class InspectionTools
         return resampled;
     }
 
+    /// <summary>Runs the <c>list_screenshots</c> MCP tool.</summary>
     [McpServerTool(Name = "list_screenshots", ReadOnly = true), Description(
         "Lists recently captured screenshots (id, label, size, when) so you can pick ids for compare_screenshots.")]
     public static Task<string> ListScreenshots() =>
         Task.FromResult(RenderScreenshotList());
 
+    /// <summary>Runs the <c>compare_screenshots</c> MCP tool.</summary>
     [McpServerTool(Name = "compare_screenshots", ReadOnly = true), Description(
         "Diffs two captured screenshots and returns a diff image (changed pixels in red) plus stats: " +
         "percent changed and the changed-region bounds. Screenshots are captured by screenshot_window / " +
@@ -577,6 +593,7 @@ public sealed class InspectionTools
             return comparison.DiffPng is { } diff ? Image(diff, summary) : Text(summary);
         });
 
+    /// <summary>Runs the <c>wait_for</c> MCP tool.</summary>
     [McpServerTool(Name = "wait_for", ReadOnly = true), Description(
         "Waits until a control reaches a condition, polling so you don't busy-loop get_visual_tree after " +
         "an invoke or hot reload. Conditions: 'exists', 'gone', 'visible', 'hidden', 'enabled', " +
@@ -648,6 +665,7 @@ public sealed class InspectionTools
         }
     }
 
+    /// <summary>Runs the <c>wait_idle</c> MCP tool.</summary>
     [McpServerTool(Name = "wait_idle", ReadOnly = true), Description(
         "Waits until the UI thread has drained its queued work (layout, data-binding, rendering). Call " +
         "after a hot reload or an interaction to be sure the UI has settled before you screenshot or " +
@@ -658,6 +676,7 @@ public sealed class InspectionTools
         return "UI thread is idle.";
     }
 
+    /// <summary>Runs the <c>highlight</c> MCP tool.</summary>
     [McpServerTool(Name = "highlight"), Description(
         "Draws a frame around a control (or all controls of a type) in the live app so you can see where " +
         "it actually ended up, then returns an in-context screenshot showing the frame. The frame is an " +
@@ -720,6 +739,7 @@ public sealed class InspectionTools
             }
         });
 
+    /// <summary>Runs the <c>get_errors</c> MCP tool.</summary>
     [McpServerTool(Name = "get_errors", ReadOnly = true), Description(
         "Returns recent build, binding, converter and runtime errors from the diagnostics buffer. Runtime " +
         "errors include unhandled exceptions thrown in event handlers/commands (with the throw site when " +
@@ -742,6 +762,7 @@ public sealed class InspectionTools
         return string.Join("\n", entries.Select(e => e.ToString()));
     }
 
+    /// <summary>Runs the <c>get_logs</c> MCP tool.</summary>
     [McpServerTool(Name = "get_logs", ReadOnly = true), Description(
         "Returns the app's recent log output from an in-process ring buffer: everything written through " +
         "Avalonia's Logger plus everything printed to stdout/stderr. Use this when the app was started by " +
@@ -812,6 +833,7 @@ public sealed class InspectionTools
               "output is captured at every level. Set AppLogBuffer.MinimumLevel to lower the threshold."
             : string.Empty;
 
+    /// <summary>Runs the <c>get_render_stats</c> MCP tool.</summary>
     [McpServerTool(Name = "get_render_stats", ReadOnly = true), Description(
         "Returns rendering and layout cost for a window: measured frame rate, the number of visuals in the " +
         "tree, client/frame size, render scaling and — with layoutTiming=true — the last layout run's pass " +

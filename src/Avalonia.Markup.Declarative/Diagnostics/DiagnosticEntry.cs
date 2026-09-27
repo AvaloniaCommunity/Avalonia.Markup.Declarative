@@ -7,8 +7,11 @@ namespace Avalonia.Markup.Declarative.Diagnostics;
 /// </summary>
 public enum DiagnosticSeverity
 {
+    /// <summary>Informational diagnostic.</summary>
     Info,
+    /// <summary>Diagnostic describing a recoverable issue.</summary>
     Warning,
+    /// <summary>Diagnostic describing an error.</summary>
     Error
 }
 

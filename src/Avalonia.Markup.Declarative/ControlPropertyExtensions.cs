@@ -14,8 +14,16 @@ using System.Windows.Input;
 
 namespace Avalonia.Markup.Declarative;
 
+/// <summary>Fluent helpers for setting Avalonia control properties, bindings, and content.</summary>
 public static class ControlPropertyExtensions
 {
+    /// <summary>Runs a property setter while preserving the fluent chain and adding build-error context.</summary>
+    /// <typeparam name="TControl">The control being configured.</typeparam>
+    /// <param name="control">The control being configured.</param>
+    /// <param name="setAction">The setter action to run.</param>
+    /// <param name="file">The source file where the setter was called.</param>
+    /// <param name="line">The source line where the setter was called.</param>
+    /// <returns>The configured control.</returns>
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TControl _set<TControl>(
@@ -87,6 +95,8 @@ public static class ControlPropertyExtensions
     /// <param name="getter"></param>
     /// <param name="mode"></param>
     /// <param name="converter"></param>
+    /// <param name="file">The source file where the binding was declared, supplied by the compiler.</param>
+    /// <param name="line">The source line where the binding was declared, supplied by the compiler.</param>
     /// <returns></returns>
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -134,6 +144,8 @@ public static class ControlPropertyExtensions
     /// <param name="control">The control to bind. Cannot be null.</param>
     /// <param name="avaloniaProperty">The property to bind. Cannot be null.</param>
     /// <param name="binding">The binding to apply to the property. Cannot be null.</param>
+    /// <param name="file">The source file where the binding was declared, supplied by the compiler.</param>
+    /// <param name="line">The source line where the binding was declared, supplied by the compiler.</param>
     /// <returns>The same control instance, enabling method chaining.</returns>
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -224,7 +236,7 @@ public static class ControlPropertyExtensions
     }
 
     /// <summary>
-    /// It's a shortcut for Grid_Column (in xaml: Grid.Column) extension 
+    /// It's a shortcut for Grid_Column (in xaml: Grid.Column) extension
     /// </summary>
     /// <typeparam name="TElement"></typeparam>
     /// <param name="control">Control for positioning</param>
@@ -239,7 +251,7 @@ public static class ControlPropertyExtensions
     }
 
     /// <summary>
-    /// It's a shortcut for Grid_Row (in xaml: Grid.Row) extension 
+    /// It's a shortcut for Grid_Row (in xaml: Grid.Row) extension
     /// </summary>
     /// <typeparam name="TElement">Control type</typeparam>
     /// <param name="control">Control for positioning</param>
@@ -254,7 +266,7 @@ public static class ControlPropertyExtensions
     }
 
     /// <summary>
-    /// It's a shortcut for Grid_ColumnDefinitions (in xaml: Grid.ColumnDefinitions) extension 
+    /// It's a shortcut for Grid_ColumnDefinitions (in xaml: Grid.ColumnDefinitions) extension
     /// </summary>
     /// <typeparam name="TElement">Grid</typeparam>
     /// <param name="control">Grid control</param>
@@ -269,7 +281,7 @@ public static class ControlPropertyExtensions
     }
 
     /// <summary>
-    /// It's a shortcut for Grid_RowDefinitions (in xaml: Grid.RowDefinitions) extension 
+    /// It's a shortcut for Grid_RowDefinitions (in xaml: Grid.RowDefinitions) extension
     /// </summary>
     /// <typeparam name="TElement">Grid</typeparam>
     /// <param name="control">Grid control</param>
@@ -284,7 +296,7 @@ public static class ControlPropertyExtensions
     }
 
     /// <summary>
-    /// It's a shortcut for Grid_ColumnDefinitions (in xaml: Grid.ColumnDefinitions) extension 
+    /// It's a shortcut for Grid_ColumnDefinitions (in xaml: Grid.ColumnDefinitions) extension
     /// </summary>
     /// <typeparam name="TElement">Grid</typeparam>
     /// <param name="control">Grid control</param>
@@ -299,7 +311,7 @@ public static class ControlPropertyExtensions
     }
 
     /// <summary>
-    /// It's a shortcut for Grid_RowDefinitions (in xaml: Grid.RowDefinitions) extension 
+    /// It's a shortcut for Grid_RowDefinitions (in xaml: Grid.RowDefinitions) extension
     /// </summary>
     /// <typeparam name="TElement">Grid</typeparam>
     /// <param name="control">Grid control</param>
@@ -314,7 +326,7 @@ public static class ControlPropertyExtensions
     }
 
     /// <summary>
-    /// It's a shortcut for Grid_ColumnSpan (in xaml: Grid.ColumnSpan) extension 
+    /// It's a shortcut for Grid_ColumnSpan (in xaml: Grid.ColumnSpan) extension
     /// </summary>
     /// <typeparam name="TElement">Control Type</typeparam>
     /// <param name="control">Control for positioning</param>
@@ -329,7 +341,7 @@ public static class ControlPropertyExtensions
     }
 
     /// <summary>
-    /// It's a shortcut for Grid_RowSpan (in xaml: Grid.RowSpan) extension 
+    /// It's a shortcut for Grid_RowSpan (in xaml: Grid.RowSpan) extension
     /// </summary>
     /// <typeparam name="TElement">Control type</typeparam>
     /// <param name="control">Control for positioning</param>
@@ -484,7 +496,7 @@ public static class ControlPropertyExtensions
     }
 
     /// <summary>
-    /// Sets the ItemsPanel property of an ItemsControl to a new PanelTemplate that produces the specified Panel instance. This allows you to define a custom panel for arranging the items in the control. The method returns the control instance to enable fluent configuration. 
+    /// Sets the ItemsPanel property of an ItemsControl to a new PanelTemplate that produces the specified Panel instance. This allows you to define a custom panel for arranging the items in the control. The method returns the control instance to enable fluent configuration.
     /// </summary>
     /// <typeparam name="TItemsControl"></typeparam>
     /// <param name="control"></param>
@@ -510,7 +522,7 @@ public static class ControlPropertyExtensions
     }
 
     /// <summary>
-    /// Performs additional processing on the control and returns the control itself. This method is useful for chaining multiple operations on a control in a fluent manner. 
+    /// Performs additional processing on the control and returns the control itself. This method is useful for chaining multiple operations on a control in a fluent manner.
     /// </summary>
     /// <typeparam name="TElement"></typeparam>
     /// <param name="control"></param>
@@ -524,12 +536,14 @@ public static class ControlPropertyExtensions
     }
 
     /// <summary>
-    /// Sets the Name property of the control and registers it with the provided INameScope. This allows the control to be referenced by name within the scope, enabling features like data binding and event handling that rely on named controls. 
+    /// Sets the Name property of the control and registers it with the provided INameScope. This allows the control to be referenced by name within the scope, enabling features like data binding and event handling that rely on named controls.
     /// </summary>
     /// <typeparam name="TElement"></typeparam>
     /// <param name="control">The control whose Name property will be set. Cannot be null.</param>
     /// <param name="name">The name to assign to the control. Cannot be null or empty.</param>
     /// <param name="ns">The name scope in which to register the control. Cannot be null.</param>
+    /// <param name="_callerFile">The source file where the control was declared, supplied by the compiler.</param>
+    /// <param name="_callerLine">The source line where the control was declared, supplied by the compiler.</param>
     /// <returns>The control instance with the specified name set and registered in the provided name scope. Enables method chaining.</returns>
     [StackTraceHidden]
     public static TElement Name<TElement>(this TElement control, string name, INameScope ns,
@@ -636,6 +650,9 @@ public static class ControlPropertyExtensions
         return control;
     }
 
+    /// <summary>Returns a stack trace with the requested number of leading frames skipped.</summary>
+    /// <param name="depth">The number of leading frames to skip.</param>
+    /// <returns>The resulting stack trace.</returns>
     public static StackTrace GetDeeperStackTrace(int depth) =>
         depth > 0 ? GetDeeperStackTrace(depth - 1) : new StackTrace(0, true);
 

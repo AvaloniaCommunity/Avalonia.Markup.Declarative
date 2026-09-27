@@ -17,7 +17,7 @@ namespace Avalonia.Markup.Declarative.Diagnostics;
 /// <c>click_at</c> and round-trips through <c>hit_test</c>.
 /// </para>
 /// <para>
-/// <see cref="Visual.TransformToVisual"/> accounts for every transform on the path — render transforms,
+/// <c>TransformToVisual</c> accounts for every transform on the path — render transforms,
 /// a <c>LayoutTransformControl</c>'s UI-scale, scroll offsets — so scaled/transformed subtrees are
 /// reported correctly. It returns <see langword="null"/> when the two visuals are not in the same
 /// visual tree (e.g. popup content realized in a separate <c>PopupRoot</c>); resolve such content

@@ -13,7 +13,7 @@ public class Style<TControl> : Style, IRelativeStyle
     private Func<Selector, Selector> SelectorFunc { get; }
 
     /// <summary>
-    /// Creates Style with added .OfType<typeparam name="TControl"></typeparam> selector
+    /// Creates a style with an <c>OfType&lt;TControl&gt;()</c> selector.
     /// </summary>
     public Style()
     {
@@ -23,7 +23,7 @@ public class Style<TControl> : Style, IRelativeStyle
     }
 
     /// <summary>
-    /// Creates Style with applied selector. 
+    /// Creates Style with applied selector.
     /// </summary>
     public Style(
             Func<Selector, Selector> selectorFunc,
@@ -57,6 +57,7 @@ public class Style<TControl> : Style, IRelativeStyle
         UpdateSelector(null);
     }
 
+    /// <inheritdoc/>
     public void UpdateSelector(Func<Selector, Selector>? baseSelectorFunc)
     {
         if (baseSelectorFunc != null)
@@ -68,5 +69,6 @@ public class Style<TControl> : Style, IRelativeStyle
 
 internal interface IRelativeStyle : IStyle
 {
+    /// <summary>Updates this style's selector using an optional selector from its containing group.</summary>
     void UpdateSelector(Func<Selector, Selector>? baseSelectorFunc);
 }

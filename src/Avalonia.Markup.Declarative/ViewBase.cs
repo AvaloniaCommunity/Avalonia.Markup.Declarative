@@ -15,48 +15,56 @@ public enum ViewInitializationStrategy
     /// View is initialized lazily when first accessed (e.g., when Child property is accessed or when attached to visual tree).
     /// </summary>
     Lazy,
-    
+
     /// <summary>
     /// View is initialized immediately in the constructor.
     /// </summary>
     Immediate
 }
 
+/// <summary>Base class for declarative views whose UI is built from a view model.</summary>
+/// <typeparam name="TViewModel">The view model type used to build the view.</typeparam>
 public abstract class ViewBase<TViewModel> : ViewBase
     where TViewModel : class
 {
+    /// <summary>Gets or sets the view model exposed as this view's data context.</summary>
     public virtual TViewModel? ViewModel
     {
         get => (TViewModel?)DataContext!;
         set => DataContext = value;
     }
 
-    //injecting viewmodel through constructor is optional, but if you do it, the view will be initialized immediately with provided viewmodel as DataContext
+    /// <summary>Creates and immediately initializes the view with the supplied view model.</summary>
+    /// <param name="viewModel">The view model used to build the view.</param>
     protected ViewBase(TViewModel viewModel) : base(ViewInitializationStrategy.Lazy)
     {
         DataContext = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         Initialize();
     }
 
-    //classic mvvm approach with parameterless constructor and setting DataContext later is also supported, but in this case the view will be initialized lazily when first accessed or attached to visual tree
+    /// <summary>Creates a view for the classic MVVM pattern, where the data context is assigned later. Initialization is deferred until a compatible data context is assigned or the view is first accessed or attached to the visual tree.</summary>
     protected ViewBase() : base(ViewInitializationStrategy.Lazy)
     {
-        // not calling Initialize()! Waiting for OnDataContextChanged
     }
 
+    /// <inheritdoc/>
+    /// <remarks>Initializes the view once a compatible view model is assigned and the view has not already been initialized.</remarks>
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);
 
-        // once DataContext is set to a compatible viewmodel type, we can initialize the view if it hasn't been initialized yet
         if (DataContext is TViewModel && !IsInitialized)
         {
             Initialize();
         }
     }
 
+    /// <summary>Builds the control tree for the supplied view model.</summary>
+    /// <param name="vm">The view model whose state is displayed.</param>
+    /// <returns>The root control of the view.</returns>
     protected abstract object Build(TViewModel vm);
 
+    /// <inheritdoc/>
     protected override object Build()
     {
         if (DataContext is not TViewModel vm)
@@ -81,17 +89,25 @@ public abstract class ViewBase : Decorator, IReloadable, IDeclarativeViewBase
     /// </summary>
     protected INameScope Scope => _nameScope ??= new NameScope();
 
+    /// <summary>Raised after the view's styles and control tree have been initialized.</summary>
     public event Action? ViewInitialized;
 
+    /// <summary>Builds the root control of the view.</summary>
+    /// <returns>The root control of the view.</returns>
     protected abstract object Build();
 
+    /// <summary>Builds the styles applied to this view.</summary>
+    /// <returns>The styles to apply, or <see langword="null"/> when the view has none.</returns>
     protected virtual StyleGroup? BuildStyles() => null;
 
-    protected ViewBase() 
+    /// <summary>Creates a view using the configured default initialization strategy.</summary>
+    protected ViewBase()
         : this(AppBuilderExtensions.DefaultViewInitializationStrategy)
     {
     }
 
+    /// <summary>Creates a view with the specified initialization strategy.</summary>
+    /// <param name="initializationStrategy">Determines when the view builds its control tree.</param>
     protected ViewBase(ViewInitializationStrategy initializationStrategy)
     {
         InitializationStrategy = initializationStrategy;
@@ -124,17 +140,19 @@ public abstract class ViewBase : Decorator, IReloadable, IDeclarativeViewBase
     {
     }
 
-    protected virtual void OnAfterInitialized() 
+    /// <summary>Runs after the view has initialized its styles and control tree.</summary>
+    protected virtual void OnAfterInitialized()
     {
     }
 
+    /// <summary>Builds the view's styles and control tree unless it is already initialized.</summary>
     public void Initialize()
     {
         if (_isInitialized || _isInitializing)
             return;
-            
+
         _isInitializing = true;
-        
+
         try
         {
             OnCreated();
@@ -214,6 +232,7 @@ public abstract class ViewBase : Decorator, IReloadable, IDeclarativeViewBase
     }
 
     #region Hot reload stuff
+    /// <summary>Rebuilds the view on the UI thread and invalidates its layout and rendering.</summary>
     public void Reload()
     {
         Dispatcher.UIThread.InvokeAsync(() =>
@@ -233,10 +252,12 @@ public abstract class ViewBase : Decorator, IReloadable, IDeclarativeViewBase
         });
     }
 
+    /// <summary>Runs immediately before this view is rebuilt.</summary>
     protected virtual void OnBeforeReload()
     {
     }
 
+    /// <inheritdoc/>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -244,6 +265,7 @@ public abstract class ViewBase : Decorator, IReloadable, IDeclarativeViewBase
         EnsureInitialized();
     }
 
+    /// <inheritdoc/>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
@@ -252,4 +274,7 @@ public abstract class ViewBase : Decorator, IReloadable, IDeclarativeViewBase
     #endregion
 }
 
+/// <summary>Reports an exception that occurred while building a declarative view.</summary>
+/// <param name="message">A message describing the view-build failure.</param>
+/// <param name="innerException">The exception that caused the failure.</param>
 public class ViewBuildingException(string message, Exception innerException) : Exception(message, innerException);

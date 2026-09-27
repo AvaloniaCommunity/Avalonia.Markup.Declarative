@@ -10,7 +10,7 @@ namespace Avalonia.Markup.Declarative;
 public static class ViewFactory
 {
     /// <summary>
-    /// Creates a control instance using the registered <see cref="IComponentControlFactory"/>
+    /// Creates a control instance using the registered component control factory
     /// or falls back to parameterless constructor.
     /// </summary>
     public static TControl Create<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TControl>() where TControl : Control

@@ -36,6 +36,7 @@ public sealed class InteractionTools
 {
     private InteractionTools() { }
 
+    /// <summary>Runs the <c>invoke</c> MCP tool.</summary>
     [McpServerTool(Name = "invoke", Destructive = true), Description(
         "EXPERIMENTAL remote control: performs a user action on a control, dispatched via UI Automation. " +
         "Target by Name or by visible label (automation name). Actions: " +
@@ -203,6 +204,7 @@ public sealed class InteractionTools
         return $"Control {label} ({control.GetType().Name}) does not support 'toggle'.";
     }
 
+    /// <summary>Runs the <c>set_window_size</c> MCP tool.</summary>
     [McpServerTool(Name = "set_window_size", Destructive = true), Description(
         "Resizes a desktop window so you can verify responsive layout at a breakpoint (e.g. 400/800/1200 " +
         "wide). Returns the resulting client size (which may be clamped by Min/Max) and the previous size " +
@@ -227,6 +229,7 @@ public sealed class InteractionTools
                 window.Title, previous.Width, previous.Height, window.ClientSize.Width, window.ClientSize.Height, width, height);
         });
 
+    /// <summary>Runs the <c>set_theme</c> MCP tool.</summary>
     [McpServerTool(Name = "set_theme", Destructive = true), Description(
         "Switches the application theme variant so you can verify both light and dark. Pass 'Light', " +
         "'Dark' or 'Default'. Returns the previous and resulting variant. Disabled unless EnableInteraction was set.")]
@@ -256,6 +259,7 @@ public sealed class InteractionTools
             return $"Theme requested={target}, actual now={app.ActualThemeVariant} (was requested={previous?.ToString() ?? "Default"}).";
         });
 
+    /// <summary>Runs the <c>click_at</c> MCP tool.</summary>
     [McpServerTool(Name = "click_at", Destructive = true), Description(
         "Clicks whatever control is at a coordinate. Coordinates are ABSOLUTE client-DIP (the same frame " +
         "get_visual_tree's center=(x,y)/hit_test/drag use; 96-DPI screenshot pixels match 1:1). By default " +
@@ -352,6 +356,7 @@ public sealed class InteractionTools
     // drawing canvases) — where click_at(automation)/invoke cannot. Coordinates are absolute client-DIP
     // (the frame get_visual_tree's center=/hit_test/screenshots share).
 
+    /// <summary>Runs the <c>tap</c> MCP tool.</summary>
     [McpServerTool(Name = "tap", Destructive = true), Description(
         "Synthesizes a REAL pointer click (move → press → release) at an absolute client-DIP coordinate — " +
         "the universal way to click, including custom controls with hand-written pointer handlers and no " +
@@ -375,6 +380,7 @@ public sealed class InteractionTools
             WithPointer(windowId, pointerType, pressure, inverted, (top, spec) =>
                 InputSynthesizer.Tap(top, new Point(x, y), ParseButton(button), ParseModifiers(modifiers), count, spec)));
 
+    /// <summary>Runs the <c>pointer_press</c> MCP tool.</summary>
     [McpServerTool(Name = "pointer_press", Destructive = true), Description(
         "Synthesizes a REAL pointer button press at an absolute client-DIP coordinate and BEGINS a gesture " +
         "(the button stays held). Follow with pointer_move / pointer_release — capture is maintained across " +
@@ -395,6 +401,7 @@ public sealed class InteractionTools
             WithPointer(windowId, pointerType, pressure, inverted, (top, spec) =>
                 InputSynthesizer.PointerPress(top, new Point(x, y), ParseButton(button), ParseModifiers(modifiers), spec)));
 
+    /// <summary>Runs the <c>pointer_move</c> MCP tool.</summary>
     [McpServerTool(Name = "pointer_move", Destructive = true), Description(
         "Synthesizes a REAL pointer move to an absolute client-DIP coordinate. During a gesture started by " +
         "pointer_press the held button and the device it began with are carried (drag); otherwise it is a " +
@@ -411,6 +418,7 @@ public sealed class InteractionTools
             WithPointer(windowId, pointerType, pressure, inverted, (top, spec) =>
                 InputSynthesizer.PointerMove(top, new Point(x, y), ParseModifiers(modifiers), spec)));
 
+    /// <summary>Runs the <c>pointer_release</c> MCP tool.</summary>
     [McpServerTool(Name = "pointer_release", Destructive = true), Description(
         "Synthesizes a REAL pointer button release at an absolute client-DIP coordinate, ending the active " +
         "gesture. Disabled unless EnableInteraction was set.")]
@@ -425,6 +433,7 @@ public sealed class InteractionTools
             WithPointer(windowId, pointerType, pressure: null, inverted: false, (top, spec) =>
                 InputSynthesizer.PointerRelease(top, new Point(x, y), ParseButton(button), ParseModifiers(modifiers), spec)));
 
+    /// <summary>Runs the <c>drag</c> MCP tool.</summary>
     [McpServerTool(Name = "drag", Destructive = true), Description(
         "Synthesizes a REAL press-drag-release from (x1,y1) to (x2,y2) in absolute client-DIP coordinates, " +
         "with the button held through intermediate moves — this is how you scrub a custom slider, move a " +
@@ -449,6 +458,7 @@ public sealed class InteractionTools
             WithPointer(windowId, pointerType, pressure, inverted, (top, spec) =>
                 InputSynthesizer.Drag(top, new Point(x1, y1), new Point(x2, y2), ParseButton(button), steps <= 0 ? 10 : steps, Math.Max(0, holdMs), ParseModifiers(modifiers), spec)));
 
+    /// <summary>Runs the <c>pointer_wheel</c> MCP tool.</summary>
     [McpServerTool(Name = "pointer_wheel", Destructive = true), Description(
         "Synthesizes a REAL mouse-wheel event (PointerWheelChanged) at an absolute client-DIP coordinate — " +
         "the only way to zoom or scroll a custom canvas, which usually zooms around the cursor rather than " +
@@ -475,6 +485,7 @@ public sealed class InteractionTools
                 InputSynthesizer.Wheel(top, new Point(x, y), new Vector(dx, dy), ParseModifiers(modifiers), precision));
         });
 
+    /// <summary>Runs the <c>touch_press</c> MCP tool.</summary>
     [McpServerTool(Name = "touch_press", Destructive = true), Description(
         "Puts a FINGER down at an absolute client-DIP coordinate. 'touchId' names the finger, so several " +
         "can be down at once — this is how you build a multi-touch gesture (two-finger tap to undo, " +
@@ -491,6 +502,7 @@ public sealed class InteractionTools
         AgentToolContext.RunToolAsync("touch_press", () =>
             WithTop(windowId, top => InputSynthesizer.TouchPress(top, touchId, new Point(x, y), ParseModifiers(modifiers), pressure)));
 
+    /// <summary>Runs the <c>touch_move</c> MCP tool.</summary>
     [McpServerTool(Name = "touch_move", Destructive = true), Description(
         "Moves the finger 'touchId' to an absolute client-DIP coordinate. The finger must be down " +
         "(touch_press) first. Move each finger in turn to advance a multi-touch gesture one frame. " +
@@ -505,6 +517,7 @@ public sealed class InteractionTools
         AgentToolContext.RunToolAsync("touch_move", () =>
             WithTop(windowId, top => InputSynthesizer.TouchMove(top, touchId, new Point(x, y), ParseModifiers(modifiers), pressure)));
 
+    /// <summary>Runs the <c>touch_release</c> MCP tool.</summary>
     [McpServerTool(Name = "touch_release", Destructive = true), Description(
         "Lifts the finger 'touchId' at an absolute client-DIP coordinate, ending that contact. " +
         "Disabled unless EnableInteraction was set.")]
@@ -517,6 +530,7 @@ public sealed class InteractionTools
         AgentToolContext.RunToolAsync("touch_release", () =>
             WithTop(windowId, top => InputSynthesizer.TouchRelease(top, touchId, new Point(x, y), ParseModifiers(modifiers))));
 
+    /// <summary>Runs the <c>pinch</c> MCP tool.</summary>
     [McpServerTool(Name = "pinch", Destructive = true), Description(
         "Performs a complete two-finger pinch/spread centred on (cx,cy) in absolute client-DIP coordinates: " +
         "both contacts go down 'fromDistance' apart, travel to 'toDistance', then lift — raising " +
@@ -535,6 +549,7 @@ public sealed class InteractionTools
         AgentToolContext.RunToolAsync("pinch", () =>
             WithTop(windowId, top => InputSynthesizer.Pinch(top, new Point(cx, cy), fromDistance, toDistance, steps <= 0 ? 10 : steps, ParseModifiers(modifiers))));
 
+    /// <summary>Runs the <c>open_popup</c> MCP tool.</summary>
     [McpServerTool(Name = "open_popup", Destructive = true), Description(
         "Opens a closed Popup/Flyout so its content becomes visible and capturable — the guided way out of " +
         "the 'has a zero size and cannot be captured' dead end (see the hint from screenshot_control). Pass " +
@@ -550,6 +565,7 @@ public sealed class InteractionTools
             return result;
         });
 
+    /// <summary>Runs the <c>list_bindable</c> MCP tool.</summary>
     [McpServerTool(Name = "list_bindable", ReadOnly = true), Description(
         "Lists what an escape hatch can drive on a DataContext: settable properties (for set_view_model), " +
         "ICommand properties + invokable methods (for invoke_command), and nested sub-objects to drill into " +
@@ -651,6 +667,7 @@ public sealed class InteractionTools
         return result;
     }
 
+    /// <summary>Runs the <c>set_view_model</c> MCP tool.</summary>
     [McpServerTool(Name = "set_view_model", Destructive = true), Description(
         "ESCAPE HATCH for UI tests: sets a property on a control's DataContext (view-model) directly, by " +
         "reflection — the fast way to drive the app into a state that is awkward to reach through the UI " +
@@ -677,6 +694,7 @@ public sealed class InteractionTools
             return result;
         });
 
+    /// <summary>Runs the <c>invoke_command</c> MCP tool.</summary>
     [McpServerTool(Name = "invoke_command", Destructive = true), Description(
         "ESCAPE HATCH for UI tests: invokes an ICommand (or a public method) on a control's DataContext " +
         "(view-model) directly — trigger the logic behind a button without finding and clicking that " +
