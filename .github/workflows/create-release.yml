@@ -1,0 +1,50 @@
+name: Create Release
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'Default Package Version, if no release'
+        default: '0.0.1-alpha.1'
+        required: false
+        type: string
+      dry_run:
+        description: 'Dry Run Release, no publishing'
+        default: true
+        required: false
+        type: boolean
+    outputs:
+      new_release_published:
+        description: "New release was or will be published (if dry_run)"
+        value: ${{ jobs.create-release.outputs.new_release_published }}
+      new_release_version:
+        description: "The release version"
+        value: ${{ jobs.create-release.outputs.new_release_version }}
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      new_release_published: ${{ steps.semantic.outputs.new_release_published }}
+      new_release_version: ${{ (steps.semantic.outputs.new_release_published && steps.semantic.outputs.new_release_version) || inputs.version }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v7
+
+    - name: Download NuGet Packages
+      uses: actions/download-artifact@v8
+      continue-on-error: ${{ inputs.dry_run }}
+      with:
+        name: nuget-packages
+        path: nuget-packages
+
+    - name: Semantic Release
+      uses: cycjimmy/semantic-release-action@v8.1.4
+      id: semantic
+      with:
+        dry_run: ${{ inputs.dry_run }}
+        extra_plugins: |
+          conventional-changelog-conventionalcommits@9
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

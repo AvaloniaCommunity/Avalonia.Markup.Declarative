@@ -1,0 +1,86 @@
+name: Build & Test
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'Package Version'
+        default: '0.0.1-alpha.1'
+        required: false
+        type: string
+      ref:
+        description: 'Git ref to check out'
+        required: false
+        type: string
+      timeout_minutes:
+        type: number
+        required: false
+        default: 30
+      runner:
+        description: 'GitHub Actions runner'
+        type: string
+        required: false
+        default: ubuntu-latest
+      package_artifacts:
+        description: 'Pack and upload NuGet artifacts'
+        type: boolean
+        required: false
+        default: true
+
+permissions:
+  contents: read
+
+env:
+  CONFIGURATION: Release
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build-test:
+    name: Build & Test
+    timeout-minutes: ${{ inputs.timeout_minutes }}
+    runs-on: ${{ inputs.runner }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ inputs.ref || github.ref }}
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v6
+      with:
+        global-json-file: global.json
+
+    - name: .NET Build
+      run: dotnet build src -c ${{ env.CONFIGURATION }} -p:Version=${{ inputs.version }}
+
+    - name: .NET Test
+      run: dotnet test src -c ${{ env.CONFIGURATION }} --no-build --report-xunit-trx --report-xunit-trx-filename test-results.trx --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
+
+    - name: Code Coverage Report
+      if: runner.os == 'Linux'
+      uses: irongut/CodeCoverageSummary@v1.3.0
+      with:
+        filename: src/**/*.cobertura.xml
+        fail_below_min: false
+        format: text
+        output: console
+        thresholds: '60 80'
+
+    - name: .NET Pack
+      if: inputs.package_artifacts
+      run: dotnet pack src --no-build -c ${{ env.CONFIGURATION }} -p:Version=${{ inputs.version }} -o nuget-packages
+
+    - name: .NET Pack Templates
+      if: inputs.package_artifacts
+      run: dotnet pack Templates/Declarative.Avalonia.Templates/Declarative.Avalonia.Templates.csproj -c ${{ env.CONFIGURATION }} -p:Version=${{ inputs.version }} -o nuget-packages
+
+    - name: Upload NuGet Packages
+      if: inputs.package_artifacts
+      uses: actions/upload-artifact@v7
+      with:
+        name: nuget-packages
+        path: |
+          nuget-packages/*.nupkg
+          nuget-packages/*.snupkg
+        if-no-files-found: error

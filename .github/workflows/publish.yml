@@ -1,96 +1,84 @@
 name: Publish NuGet packages
 
-# Releases are cut by pushing a v<version> tag (see the release flow in the repo docs).
-# workflow_dispatch is kept for re-running a failed publish without moving the tag.
-on:
-  push:
-    tags:
-      - 'v*'
-  workflow_dispatch:
+concurrency:
+  group: nuget-release
+  queue: max
+  cancel-in-progress: false
 
-env:
-  CONFIGURATION: Release
-  NUGET_SOURCE: https://api.nuget.org/v3/index.json
-  DOTNET_NOLOGO: true
-  DOTNET_CLI_TELEMETRY_OPTOUT: true
+on:
+  workflow_dispatch:
+    inputs:
+      existing_version:
+        description: 'Existing release version to republish (for example, 1.2.3; checks out tag v1.2.3)'
+        required: false
+        type: string
+  push:
+    branches:
+      - 'master'
+      - 'alpha'
+      - 'beta'
+      - 'preview'
 
 jobs:
-  publish:
-    # Windows matches the local dev/release environment the packages are built in today.
-    runs-on: windows-latest
+  get-version:
+    if: inputs.existing_version == ''
+    name: Get Next Version
+    permissions:
+      contents: write # semantic-release validates permissions even in dry_run mode, this job only uses read.
+    uses: ./.github/workflows/create-release.yml
+    with:
+      dry_run: true
 
+  build-test:
+    if: always() && (inputs.existing_version != '' || needs.get-version.result == 'success')
+    name: Build & Test
+    needs: get-version
     permissions:
       contents: read
-      # Required for Trusted Publishing: lets the job request a GitHub OIDC token.
-      # Without it NuGet/login gets no token and the push fails.
+    uses: ./.github/workflows/build-test.yml
+    with:
+      ref: ${{ inputs.existing_version && format('v{0}', inputs.existing_version) || github.ref }}
+      version: ${{ inputs.existing_version || needs.get-version.outputs.new_release_version }}
+
+  create-release:
+    if: inputs.existing_version == ''
+    name: Crate Release
+    needs: build-test
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    uses: ./.github/workflows/create-release.yml
+    with:
+      dry_run: false
+
+  publish-nuget:
+    name: Publish NuGet
+    needs: [create-release, build-test]
+    if: >-
+      always() &&
+      ((inputs.existing_version == '' && needs.create-release.outputs.new_release_published == 'true') ||
+      (inputs.existing_version != '' && needs.build-test.result == 'success'))
+    runs-on: ubuntu-latest
+    permissions:
       id-token: write
-
     steps:
-      - uses: actions/checkout@v7
+    - name: NuGet login
+      uses: NuGet/login@v1
+      id: login
+      with:
+        user: ${{ secrets.NUGET_USER }}
 
-      - uses: actions/setup-dotnet@v6
-        with:
-          global-json-file: global.json
+    - name: Download NuGet Packages
+      uses: actions/download-artifact@v8
+      with:
+        name: nuget-packages
+        path: nuget-packages
 
-      - name: Resolve and verify version
-        id: version
-        shell: pwsh
-        run: |
-          $props = [xml](Get-Content Directory.Build.props -Raw)
-          $version = ($props.Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1).Trim()
-          if (-not $version) { throw 'No <Version> found in Directory.Build.props' }
+    - name: Display structure of downloaded files
+      run: ls -R nuget-packages
 
-          # The tag is the source of truth for what gets published, so refuse to publish a tag
-          # that disagrees with the version baked into the packages.
-          if ('${{ github.ref_type }}' -eq 'tag') {
-            $expected = "v$version"
-            if ('${{ github.ref_name }}' -ne $expected) {
-              throw "Tag '${{ github.ref_name }}' does not match Directory.Build.props version ($expected)"
-            }
-          }
-
-          "version=$version" >> $env:GITHUB_OUTPUT
-          Write-Host "Publishing version $version"
-
-      - name: Build
-        run: dotnet build src/Avalonia.Markup.Declarative.slnx -c $env:CONFIGURATION
-
-      - name: Test
-        run: dotnet test src/Avalonia.Markup.Declarative.slnx -c $env:CONFIGURATION --no-build
-
-      - name: Pack
-        shell: pwsh
-        run: |
-          # The three packable projects. Templates lives outside the solution, so it is packed by path.
-          dotnet pack src/Avalonia.Markup.Declarative/Avalonia.Markup.Declarative.csproj -c $env:CONFIGURATION -o artifacts
-          dotnet pack src/Declarative.Avalonia.AgentTools/Declarative.Avalonia.AgentTools.csproj -c $env:CONFIGURATION -o artifacts
-          dotnet pack Templates/Declarative.Avalonia.Templates/Declarative.Avalonia.Templates.csproj -c $env:CONFIGURATION -o artifacts
-
-      - uses: actions/upload-artifact@v7
-        with:
-          name: nupkg-${{ steps.version.outputs.version }}
-          path: artifacts/*.nupkg
-          if-no-files-found: error
-
-      # Exchange the OIDC token for a temporary nuget.org API key (valid 1 hour, single use),
-      # immediately before the push so it cannot expire mid-run.
-      - name: NuGet login
-        id: nuget-login
-        uses: NuGet/login@v1
-        with:
-          user: ${{ secrets.NUGET_USER }}
-
-      - name: Push packages
-        shell: pwsh
-        run: |
-          # Enumerate explicitly: dotnet nuget push does not expand the glob itself on Windows.
-          $packages = Get-ChildItem artifacts/*.nupkg
-          if (-not $packages) { throw 'No .nupkg found in artifacts/' }
-
-          foreach ($package in $packages) {
-            dotnet nuget push $package.FullName `
-              --api-key ${{ steps.nuget-login.outputs.NUGET_API_KEY }} `
-              --source $env:NUGET_SOURCE `
-              --skip-duplicate
-            if ($LASTEXITCODE -ne 0) { throw "Push failed for $($package.Name)" }
-          }
+    - name: .NET NuGet Push
+      env:
+        NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+      run: dotnet nuget push nuget-packages/*.nupkg --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
