@@ -1,0 +1,11 @@
+﻿<Solution>
+  <Project Path="Declarative.Avalonia.Xplat.Template.Android/Declarative.Avalonia.Xplat.Template.Android.csproj">
+    <Deploy />
+  </Project>
+  <Project Path="Declarative.Avalonia.Xplat.Template.Browser/Declarative.Avalonia.Xplat.Template.Browser.csproj" />
+  <Project Path="Declarative.Avalonia.Xplat.Template.Desktop/Declarative.Avalonia.Xplat.Template.Desktop.csproj" />
+  <Project Path="Declarative.Avalonia.Xplat.Template.iOS/Declarative.Avalonia.Xplat.Template.iOS.csproj">
+    <Deploy />
+  </Project>
+  <Project Path="Declarative.Avalonia.Xplat.Template/Declarative.Avalonia.Xplat.Template.csproj" />
+</Solution>

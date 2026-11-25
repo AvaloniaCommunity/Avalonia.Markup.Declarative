@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Avalonia Community",
+  "classifications": [
+    "Avalonia",
+    "Cross-platform",
+    "Desktop",
+    "Mobile",
+    "Web",
+    "C#",
+    "Declarative"
+  ],
+  "identity": "Avalonia.Markup.Declarative.Xplat",
+  "groupIdentity": "Avalonia.Markup.Declarative.Xplat",
+  "name": "Avalonia Markup Declarative Cross-platform App",
+  "shortName": "avalonia-declarative-xplat",
+  "description": "Creates a cross-platform Avalonia application using Avalonia.Markup.Declarative.",
+  "sourceName": "Declarative.Avalonia.Xplat.Template",
+  "preferNameDirectory": true,
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "primaryOutputs": [
+    {
+      "path": "Declarative.Avalonia.Xplat.Template.sln"
+    }
+  ]
+}
