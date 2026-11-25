@@ -1,7 +1,5 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Declarative;
-using Declarative.Avalonia.Xplat.Template;
 public partial class HostView() : ViewBase
 {
     protected override object Build()
