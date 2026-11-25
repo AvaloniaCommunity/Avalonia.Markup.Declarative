@@ -16,6 +16,6 @@ public partial class HostView() : ViewBase
                         .Children([
                             new Button().HorizontalAlignment(Avalonia.Layout.HorizontalAlignment.Stretch).Content("Home")
                         ]))
-                        .Content(new MainView());
+                        .Content(new CounterView());
     }
 }

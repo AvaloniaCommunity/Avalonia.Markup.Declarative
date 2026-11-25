@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Declarative;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-public partial class MainView() : ViewBase<MainView.State>(new State())
+public partial class CounterView() : ViewBase<CounterView.State>(new State())
 {
     protected override object Build(State vm)
     {
